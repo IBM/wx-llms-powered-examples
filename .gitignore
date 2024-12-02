@@ -1,0 +1,5 @@
+.env
+.venv
+__pycache__
+.obs*
+techqa_technote_faq_samples.json
