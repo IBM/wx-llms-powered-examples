@@ -15,7 +15,7 @@ The examples currently included are:
 2. **[wx-weaviate-embedding-api](wx-weaviate-embedding-api/)**\
 		Weaviate is an open-source vector database enabling semantic search through vector embeddings and searches. While it supports many AI platforms, Watsonx is not directly integrated. To use an embedding model like ibm/slate-30m-english-rtrvr, this code provides a workaround by implementing an API that allows Weaviate to consume the model on Watsonx. A shell script is also included to set up a local Weaviate container for demonstration. Both the API and container are required to try the wx-rag-with-granite3 example. [more...](wx-weaviate-embedding-api/README.md)	
 1. **[wx-rag-with-granite3](wx-rag-with-granite3/)**\
-		The example which is an AI assitant, illustrates how RAG can assist with question-answering tasks via a use case of utilizing a public dataset, **TechQA** (https://research.ibm.com/publications/the-techqa-dataset) to provide answers or information related to IBM products in response to user questions/queries - TechQA is an open domain-adaptation question-answering dataset tailored for the technical support domain. [more...](wx-rag-with-granite3/README.md)
+		The example which is an AI assistant, illustrates how RAG can assist with question-answering tasks via a use case of utilizing a public dataset, **TechQA** (https://research.ibm.com/publications/the-techqa-dataset) to provide answers or information related to IBM products in response to user questions/queries - TechQA is an open domain-adaptation question-answering dataset tailored for the technical support domain. [more...](wx-rag-with-granite3/README.md)
 	
 ## A brief introduction to key concepts and related technologies
 
