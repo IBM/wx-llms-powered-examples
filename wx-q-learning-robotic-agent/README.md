@@ -10,7 +10,7 @@ This is a robotic agent simulation where a robot navigates a 2D grid, aiming to 
 
 Additionally, the LLM granite-3-8b-instruct assists the agent in identifying "getting stuck" scenarios, where it repeatedly visits the same states or actions without progress. These situations, caused by poor Q-values or local cycles, are addressed with the LLM's assistance to help the agent break free.
 
-![](images/screenshot1.jpg)
+<img src="images/screenshot1.jpg" width="600"/>
 
 ## How to run
 
@@ -28,7 +28,7 @@ WATSONX_PROJECT_ID=<your watsonx project id>
 ### Set up and run the code
 
 ```
-# Change the working directory to wx-tech-support-agent
+# Change the working directory to wx-q-learning-robotic-agent
 
 # Create and activate the virtual environment
 $ python -m venv .venv
@@ -38,7 +38,7 @@ $ source .venv/bin/activate
 $ pip install -r requirements. txt
 
 # Run the program
-$ python wx-q-learning-robotic-agent/grid_world_app.py
+$ python grid_world_app.py
 ```
 
 ## License
