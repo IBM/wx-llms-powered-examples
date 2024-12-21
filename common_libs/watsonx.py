@@ -9,10 +9,7 @@ from ibm_watsonx_ai.foundation_models.embeddings import Embeddings
 from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams, EmbedTextParamsMetaNames
 from ibm_watsonx_ai import Credentials
 from langchain_ibm import WatsonxLLM
-
 import os
-from dotenv import load_dotenv
-load_dotenv()
 
 class WatsonxClient:
     @staticmethod
