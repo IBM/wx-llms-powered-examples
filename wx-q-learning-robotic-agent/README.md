@@ -10,7 +10,7 @@ This is a robotic agent simulation where a robot navigates a 2D grid, aiming to 
 
 Additionally, the LLM granite-3-8b-instruct assists the agent in identifying "getting stuck" scenarios, where it repeatedly visits the same states or actions without progress. These situations, caused by poor Q-values or local cycles, are addressed with the LLM's assistance to help the agent break free.
 
-<img src="images/screenshot1.jpg" width="800px"/>
+<img src="images/screenshot1.jpg" width="500"/>
 
 ## How to run
 
