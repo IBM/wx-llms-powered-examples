@@ -13,7 +13,7 @@ The examples currently included are:
 1. **[wx-q-learning-robotic-agent](wx-q-learning-robotic-agent/)**\
 		This is a robotic agent simulation where a robot navigates a 2D grid, aiming to reach a target in as few steps as possible while avoiding walls and obstacles. The task is demonstrated using Q-Learning, a reinforcement learning algorithm. Additionally, the LLM granite-3-8b-instruct assists the agent in identifying "getting stuck" scenarios, where it repeatedly visits the same states or actions without progress. These situations, caused by poor Q-values or local cycles, are addressed with the LLM's assistance to help the agent break free. [more...](wx-q-learning-robotic-agent/README.md)
 
-		![](images/screenshot1.jpg)
+		![](./wx-q-learning-robotic-agent/images/screenshot1.jpg)
 
 2. **[wx-tech-support-agent](wx-tech-support-agent/)**\
 		This example demonstrates an AI Agent which is a conversational agent, designed to automate a technical support use case by guiding users through a troubleshooting process, and if needed taking appropriate actions. It leverages techniques such as Chain-of-Thought (CoT) prompting and Reasoning & Acting (ReAct) using LangChain, along with multiple LLMs, including Granite 3.0 provided via watsonx.  Additionally, it incorporates features like Chat Memory and Tool Calling to enhance functionality. [more...](wx-tech-support-agent/README.md)
