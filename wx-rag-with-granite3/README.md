@@ -40,7 +40,7 @@ There are several approaches to implementing RAG, and this is just one example. 
 
 - This example has been tested in a Linux environment. However, if you are using Windows or MacOS, it should work with minor adjustments to settings or command lines as needed.
 - Preferred Python version: 3.12. However, it should also work with Python 3.10 and later versions.
-- Ensure that [wx-weaviate-embedding-api](wx-weaviate-embedding-api/README.md) and the Weaviate container are up and running.
+- Ensure that [wx-weaviate-embedding-api and the Weaviate container](wx-weaviate-embedding-api/README.md) are up and running.
 - Assumptions: The current working directory is wx-rag-with-granite3. A .env file should exist in this directory, containing the following environment variables as an example:
   
 ```
