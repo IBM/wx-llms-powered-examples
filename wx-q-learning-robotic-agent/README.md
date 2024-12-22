@@ -8,9 +8,10 @@ This code is to aim with development or demonstration. In some cases, best pract
 
 This is a robotic agent simulation where a robot navigates a 2D grid, aiming to reach a target in as few steps as possible while avoiding walls and obstacles. The task is demonstrated using Q-Learning, a reinforcement learning algorithm. 
 
+<img src="images/screenshot1.jpg" width="500"/>
+
 Additionally, the LLM granite-3-8b-instruct assists the agent in identifying "getting stuck" scenarios, where it repeatedly visits the same states or actions without progress. These situations, caused by poor Q-values or local cycles, are addressed with the LLM's assistance to help the agent break free. This is just an experiment and may not be practical for real-world use cases.
 
-<img src="images/screenshot1.jpg" width="500"/>
 <img src="images/screenshot2.jpg" width="900"/>
 
 ## How to run
