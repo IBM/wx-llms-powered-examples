@@ -11,7 +11,7 @@ This repository includes examples showcasing the use of IBM foundation models in
 The examples currently included are:
 
 1. **[wx-q-learning-robotic-agent](wx-q-learning-robotic-agent/)**\
-	This is a robotic agent simulation where a robot navigates a 2D grid, aiming to reach a target in as few steps as possible while avoiding walls and obstacles. The task is demonstrated using Q-Learning, a reinforcement learning algorithm. Additionally, the LLM granite-3-8b-instruct assists the agent in identifying "getting stuck" scenarios, where it repeatedly visits the same states or actions without progress. These situations, caused by poor Q-values or local cycles, are addressed with the LLM's assistance to help the agent break free. [more...](wx-q-learning-robotic-agent/README.md)
+	This is a robotic agent simulation where a robot navigates a 2D grid, aiming to reach a target in as few steps as possible while avoiding walls and obstacles. The task is demonstrated using Q-Learning, a reinforcement learning algorithm. Additionally, as an experiment (not really practical), the LLM granite-3-8b-instruct assists the agent in identifying "getting stuck" scenarios, where it repeatedly visits the same states or actions without progress. These situations, caused by poor Q-values or local cycles, are addressed with the LLM's assistance to help the agent break free. [more...](wx-q-learning-robotic-agent/README.md)
 	
 	<img src="wx-q-learning-robotic-agent/images/screenshot1.jpg" width="300"/>
 
