@@ -19,7 +19,7 @@ from watsonx import WatsonxClient
 
 load_dotenv()
 
-TECH_NOTE_COLLECTION_NAME = "TechNote"
+TECH_NOTE_COLLECTION_NAME = "TechNoteDemo"
 
 class SingletonKnowledgeBaseRetrieverMeta(type):
     _instances = {} 
@@ -45,7 +45,7 @@ class KnowledgeBaseRetriever(metaclass=SingletonKnowledgeBaseRetrieverMeta):
     def __init__(self):
         self._weaviate_client = weaviate.connect_to_local(
                 host=os.getenv("WEAVIATE_HOSTNAME", "localhost"), 
-                port=int(os.getenv("WEAVIATE_PORT", "8080")),
+                port=int(os.getenv("WEAVIATE_PORT", "8082")),
                 grpc_port=int(os.getenv("WEAVIATE_GRPC_PORT", "50051")))
         
         self._embedding_model = WatsonxClient.request_embedding_model()

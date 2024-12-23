@@ -12,7 +12,7 @@ The IBM **Granite 3.0** model which is hosted on **watsonx**, is also utilized i
 
 For the question-answering task, the example showcases an AI assistant designed to respond to user inquiries about information related to IBM products. It draws on information from the dataset TechQA.
 
-### RAG
+### RAG (Retrieval-Augmented Generation)
 
 RAG is a technique used to integrate information or facts from external sources (e.g., knowledge bases, websites, and more) into LLM-powered applications. This allows the models to use the retrieved information as input to perform their tasks more effectively. One of the most common applications of RAG is in question-answering use cases.
 
@@ -40,7 +40,7 @@ There are several approaches to implementing RAG, and this is just one example. 
 
 - This example has been tested in a Linux environment. However, if you are using Windows or MacOS, it should work with minor adjustments to settings or command lines as needed.
 - Preferred Python version: 3.12. However, it should also work with Python 3.10 and later versions.
-- Ensure that [wx-weaviate-embedding-api and the Weaviate container](wx-weaviate-embedding-api/README.md) are up and running.
+- Ensure that [wx-weaviate-embedding-api and the Weaviate container](wx-weaviate-embedding-api/README.md)  are up and running.
 - Assumptions: The current working directory is wx-rag-with-granite3. A .env file should exist in this directory, containing the following environment variables as an example:
   
 ```
@@ -62,18 +62,18 @@ $ python -m venv .venv
 $ source .venv/bin/activate
 
 # Install required packages 
-$ pip install -r requirements. txt
+$ pip install -r requirements.txt
 
-# The weaviate_importer script will import the tech notes (documents) from the file techqa_technote_faq_samples.json into the coleection named 'TechNote' in the Weaviate database. Therefore beforing running the script, download the TechQA dataset, and extract some technote documents and save them in  techqa_technote_faq_samples.json in the same directory.
+# The weaviate_importer script will import the tech notes (documents) from the file techqa_technote_faq_samples.json into the coleection named 'TechNote' in the Weaviate database. Therefore beforing running the script, download the TechQA dataset and look for a json file which contains technotes. And then you can either extract a part of its content and save as the file techqa_technote_faq_samples.json, or modify the script to specify the technote json file you want.
+
 $ python weaviate_importer.py
 
-# Now, you can run it
-$ python rag.py
+# Run the application, and then it should be able to be accessed via the URL http://localhost:8080/ using a web browser
+$ streamlit run rag_sl.py
 ```
 
-Let's give it a try - for example, in my case, I used this question *"What are the BuffSize parameters in WebSphere MQ used for? "* which the relevant information for the answer did exist in techqa_technote_faq_samples.json - the below is the result:
+<img src="images/screenshot_rag_sl.jpg" width="800"/>
 
-<img src="../misc/rag.jpg" width="800"/>
 ## License
 
 Apache-2.0
