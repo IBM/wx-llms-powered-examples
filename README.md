@@ -1,4 +1,4 @@
-# Watsonx LLMs-powered examples 
+# Examples Powered by Watsonx LLMs
 
 ## Scope
 
