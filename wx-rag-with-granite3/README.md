@@ -65,14 +65,13 @@ $ source .venv/bin/activate
 $ pip install -r requirements.txt
 
 # The weaviate_importer script will import the tech notes (documents) from the file techqa_technote_faq_samples.json into the coleection named 'TechNote' in the Weaviate database. Therefore beforing running the script, download the TechQA dataset and look for a json file which contains technotes. And then you can either extract a part of its content and save as the file techqa_technote_faq_samples.json, or modify the script to specify the technote json file you want.
-
 $ python weaviate_importer.py
 
 # Run the application, and then it should be able to be accessed via the URL http://localhost:8080/ using a web browser
 $ streamlit run rag_sl.py
 ```
 
-<img src="images/screenshot_rag_sl.jpg" width="800"/>
+<img src="images/screenshot_rag_sl.jpg" width="900"/>
 
 ## License
 
