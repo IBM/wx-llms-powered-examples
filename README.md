@@ -1,4 +1,4 @@
-# Examples Powered by Watsonx LLMs
+# AI Application Examples Powered by Watsonx LLMs
 
 ## Scope
 
