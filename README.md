@@ -1,4 +1,4 @@
-# Large language models (LLMs)-powered examples 
+# Watsonx LLMs-powered examples 
 
 ## Scope
 
