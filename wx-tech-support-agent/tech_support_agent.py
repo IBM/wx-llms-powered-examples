@@ -191,7 +191,7 @@ class TechSupportAgent():
         print(f"\033[90m(Debug: The escalate_to_human_support tool was invoked. An email is being sent to the support team)\033[0m")
 
         result = ("I'm sorry I couldn't resolve the issue. I have escalated the case to the human support team via email, "
-                 f"and they will contact you shortly. Below is the email:\n```{email_body}```\n\n"
+                 f"and they will contact you shortly. Below is the email:\n\n~~~\n{email_body}\n~~~\n\n"
                  "If anything else, please open a new support session. Thank you!")
         return result
         
