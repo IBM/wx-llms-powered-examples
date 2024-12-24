@@ -15,6 +15,7 @@ import sys
 import time
 from prompt_toolkit import prompt
 from prompt_toolkit.styles import Style
+from collections import deque
 
 # Load environment variables from the file .env 
 from dotenv import load_dotenv
@@ -23,8 +24,132 @@ load_dotenv()
 sys.path.append("../common_libs") # not a good pratice but it's ok in this case
 from watsonx import WatsonxClient
 
-# In pratice, you should have a mechanism to keep a limit of messages in the chat_memory because of token limits
-chat_memory: list[dict[str, str]] = []
+MAX_ITERATIONS = 8
+NUMBER_OF_RETRIES = 0
+AGENT_EXECUTION_VERBOSE = False
+
+class ChatMemory:
+    def __init__(self):
+        # We should keep a limit of messages in the chat_memory because of token limits
+        # In this example, simply keep the last n messages. But in pratice, consider some better ways
+        self._chat_messages: deque[str] = deque(maxlen=50)
+
+    def get_chat_messages(self) -> list[str]:
+        return list(self._chat_messages)
+    
+    def to_string(self) -> str: 
+        if self._chat_messages:
+            text = "\n".join(f"- {role}: {message}" for entry in self._chat_messages for role, message in entry.items())
+            return text
+        else:
+            return ""
+    
+    def _add_message(self, role: str, message: str):
+        self._chat_messages.append({f"{role}": message})
+
+    def add_user_message(self, message: str):
+        self._add_message("user", message)
+    
+    def add_agent_message(self, message: str):
+        self._add_message("agent", message)
+
+class TechSupportAgent():
+    def __init__(self):
+
+        print("\nRequest the models from WatsonX...")
+        self.llama_llm = WatsonxClient.request_llm(
+                                    model_id="meta-llama/llama-3-1-70b-instruct",
+                                    decoding_method="greedy", 
+                                    temperature=0.8,
+                                    repetition_penalty=1,
+                                    stop_sequences=None)
+        self.granite_llm = WatsonxClient.request_llm(model_id="ibm/granite-3-8b-instruct",
+                                    decoding_method ="greedy", 
+                                    temperature = 0.7, 
+                                    max_new_tokens = 512,
+                                    stop_sequences=["<|end_of_text|>"])
+
+        # Set up LangChain's ReAct framework
+        self._tools = [default_action, 
+             generate_a_clarifying_question, 
+             diagnosis_and_solution, 
+             escalate_to_human_support]
+        
+        self._prompt_template_react = PromptTemplate.from_template(prompts.PROMPT_TEMPLATE__REACT)
+
+        # Construct the ReAct agent. The LLM is used as a reasoning engine
+        self._agent = create_react_agent(self.llama_llm, self._tools, self._prompt_template_react)
+
+        # Create an agent executor by passing in the agent and tools
+        self._agent_executor = AgentExecutor(agent=self._agent, 
+                                    tools=self._tools,  
+                                    verbose=AGENT_EXECUTION_VERBOSE, 
+                                    handle_parsing_errors=True, 
+                                    max_iterations = MAX_ITERATIONS,
+                                    return_intermediate_steps=True,
+                                    )
+
+        self.chat_memory = ChatMemory()
+        
+    def greet_user(self, username):
+        greeting =  f"Hello {username}! This is the techical support. How can I help you?"
+        self.chat_memory.add_agent_message(greeting)
+        return greeting
+
+    def query(self, user_input):
+        try:
+            print(f"\nAgent: \033[90mPlease wait\033[0m", end=' ', flush=True)
+            for i in range(NUMBER_OF_RETRIES + 1):
+                print(f"\033[90m...\033[0m", end=' ', flush=True)
+                agent_response = None
+                
+                result = {}
+                try:
+                    result = agent_executor.invoke({"user_input": user_input, 
+                                                    "chat_history": self.chat_memory.to_string()})
+                    agent_response = result.get('output')
+                except Exception as e:
+                    result['error'] = f"{e}"
+                    traceback.print_exc()
+
+                if agent_response is not None and "Agent stopped due to iteration limit" in agent_response:
+                    del result['output']
+                    agent_response = None
+                    result['error'] = "Agent stopped due to iteration limit or time limit"
+
+                # if no good result returned from the model, let it retry
+                if result.get('error'):
+                    if i >= NUMBER_OF_RETRIES:
+                        intermediate_steps = result.get('intermediate_steps')
+                        if intermediate_steps:
+                            print(f"\033[90m...\033[0m", end=' ', flush=True)
+                            last_step_response = intermediate_steps[-1][-1] 
+                            agent_response = last_step_response 
+                            break
+                else:
+                    break # it's very good if it can reach here, so no need for a retry
+            # End of the Retry loop    
+
+            # after all retries, if still no result:
+            if agent_response:
+                self.chat_memory.add_agent_message(agent_response)
+            else:
+                agent_response = f"Sorry, something was wrong due to an error ({result.get('error')}). Please try entering the input again..."
+
+            print(" " * 100, end='\r')
+            # print(f"Agent: {agent_response}")
+            agent_streaming_print(agent_response)
+        except Exception as error:
+            agent_response = f"Program error: Something's wrong: {error}"
+            print(f"\n{agent_response}")
+        finally:
+            return agent_response
+
+    def clear_memory(self):
+        self.chat_memory = ChatMemory()
+
+
+support_agent = TechSupportAgent()
 
 def agent_streaming_print(text: str, delay=0.005):
     print("Agent:", end=' ', flush=True)
@@ -33,13 +158,6 @@ def agent_streaming_print(text: str, delay=0.005):
         sys.stdout.flush()
         time.sleep(delay)
     print(f"")  
-
-def convert_chat_messages_dict_to_string(messages_dict) -> str: 
-    if messages_dict:
-        text = "\n".join(f"- {role}: {message}" for entry in messages_dict for role, message in entry.items())
-        return text
-    else:
-        return ""
 
 # Declare tool(s)
 @tool("default_action", return_direct=False)
@@ -60,8 +178,8 @@ def generate_a_clarifying_question(input: str):
 
     prompt_template= PromptTemplate(input_variables=["chat_history"],
                                     template=prompts.PROMPT_TEMPLATE__CLARIFYING_QUESTIONS)
-    prompt = prompt_template.format(chat_history=chat_memory)
-    questions = granite_llm.invoke(prompt)
+    prompt = prompt_template.format(chat_history=support_agent.chat_memory.to_string())
+    questions = support_agent.granite_llm.invoke(prompt)
     questions = questions.strip().removesuffix("```").removeprefix("```")
 
     response = ("The instruction for you, the agent: Refer to the JSON array below for clarifying questions that you can use to ask the user:"
@@ -81,8 +199,8 @@ def diagnosis_and_solution(input: str):
     Additionally, ask the user to confirm if the issue is resolved."""
     prompt_template= PromptTemplate(input_variables=["chat_history"],
                                     template=prompts.PROMPT_TEMPLATE__DIAGNOSIS_SOLUTION)
-    prompt = prompt_template.format(chat_history=chat_memory)
-    response = granite_llm.invoke(prompt)
+    prompt = prompt_template.format(chat_history=support_agent.chat_memory.to_string())
+    response = support_agent.granite_llm.invoke(prompt)
 
     # print("\033[90m(Debug: The diagnosis_and_solution tool was invoked)\033[0m")
 
@@ -100,7 +218,7 @@ def escalate_to_human_support(input: str):
     email_body=("Hello the support team,\n\n"
         "Please look into the issue as shown below.\n\n" 
         f"{input}\n\n"
-        f"Below is the conversation with the user so far.\n\n{convert_chat_messages_dict_to_string(chat_memory)}\n\n"
+        f"Below is the conversation with the user so far.\n\n{support_agent.get_chat_memory().to_string()}\n\n"
         "Thank you & Regards,\n\nSent by AI Agent" 
         )
 
@@ -115,26 +233,10 @@ def escalate_to_human_support(input: str):
 
 if __name__ == "__main__":
 
-    print("\nRequest the models from WatsonX...")
-
-    llama_llm = WatsonxClient.request_llm(
-                                model_id="meta-llama/llama-3-1-70b-instruct",
-                                decoding_method="greedy", 
-                                temperature=0.8,
-                                repetition_penalty=1,
-                                stop_sequences=None)
-    global granite_llm
-    granite_llm = WatsonxClient.request_llm(model_id="ibm/granite-3-8b-instruct",
-                                decoding_method ="greedy", 
-                                temperature = 0.7, 
-                                max_new_tokens = 512,
-                                stop_sequences=["<|end_of_text|>"])
 
     is_requested_to_stop = False
 
-    MAX_ITERATIONS = 8
-    NUMBER_OF_RETRIES = 0
-    AGENT_EXECUTION_VERBOSE = False
+
 
     # Tools
     tools = [default_action, 
