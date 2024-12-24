@@ -22,6 +22,7 @@ if __name__ == "__main__":
 
     if "support_agent" not in st.session_state:
          st.session_state["support_agent"] = TechSupportAgent.get_instance()
+         TechSupportAgent.get_instance().clear_memory()
 
     support_agent: TechSupportAgent = st.session_state.support_agent
 
