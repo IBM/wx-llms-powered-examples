@@ -92,7 +92,7 @@ class TechSupportAgent():
         self.granite_llm = WatsonxClient.request_llm(model_id="ibm/granite-3-8b-instruct",
                                     decoding_method ="greedy", 
                                     temperature = 0.7, 
-                                    max_new_tokens = 512,
+                                    max_new_tokens = 1024,
                                     stop_sequences=["<|end_of_text|>"])
 
         # Set up LangChain's ReAct framework
