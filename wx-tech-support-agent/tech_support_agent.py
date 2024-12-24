@@ -236,6 +236,10 @@ class TechSupportAgent():
                             print(f"\033[90m...\033[0m", end=' ', flush=True)
                             last_step_response = intermediate_steps[-1][-1] 
                             agent_response = last_step_response 
+                            # print(f"DEBUG last_step_response:\n{last_step_response}\n")
+                            agent_response = self.granite_llm.invoke("<|start_of_role|>system<|end_of_role|>You are a helpful agent (assistant) assisting the user with troubleshooting technical issues. "
+                                     f"Your task is now to generate a response using the following context or instructions:\n{last_step_response}"
+                                     "<|end_of_text|>\n<|start_of_role|>assistant<|end_of_role|>")
                             break
                 else:
                     break # it's very good if it can reach here, so no need for a retry

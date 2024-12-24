@@ -54,7 +54,7 @@ if __name__ == "__main__":
     if user_input := st.chat_input():
         st.session_state.messages.append({"role": "user", "content": user_input})
         st.chat_message("user", avatar=user_avatar).write(user_input)
-        print(f"User: {user_input}")
+        print(f"\nUser: {user_input}")
         
         with st.spinner("..."): 
             print(f"\nAgent: \033[90mPlease wait\033[0m", end=' ', flush=True)
