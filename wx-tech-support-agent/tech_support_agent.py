@@ -125,7 +125,7 @@ class TechSupportAgent():
         # a workaround to remove "\nObservation" that may be found at the end
         input = input.removesuffix("\nObservation")
 
-        return ("Based on the last messages in the chat history, "
+        return ("The instruction for the agent: Based on the last messages in the chat history, "
                 f"think about a relevant response in response to this user input '{input}'. "
                 "Do not take the next action or use another tool, instead provide the final answer/response.\n")
 
@@ -191,7 +191,7 @@ class TechSupportAgent():
         print(f"\033[90m(Debug: The escalate_to_human_support tool was invoked. An email is being sent to the support team)\033[0m")
 
         result = ("I'm sorry I couldn't resolve the issue. I have escalated the case to the human support team via email, "
-                 f"and they will contact you shortly. Below is the email:\n{email_body}\n\n"
+                 f"and they will contact you shortly. Below is the email:\n```{email_body}```\n\n"
                  "If anything else, please open a new support session. Thank you!")
         return result
         
