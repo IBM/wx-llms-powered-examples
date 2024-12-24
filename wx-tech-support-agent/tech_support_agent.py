@@ -16,6 +16,7 @@ import time
 from prompt_toolkit import prompt
 from prompt_toolkit.styles import Style
 from collections import deque
+import threading
 
 # Load environment variables from the file .env 
 from dotenv import load_dotenv
@@ -54,7 +55,33 @@ class ChatMemory:
         self._add_message("agent", message)
 
 class TechSupportAgent():
+
+    # for the demo and simplicity purposes, there is only an instance of TechSupportAgent
+    _instance = None
+    _lock = threading.Lock()  
+
+    def __new__(cls, *args, **kwargs):
+        # Prevent direct instantiation 
+        if cls._instance is not None:
+            raise Exception("This class is a Singleton. Use get_instance() to access the instance.")
+        return super().__new__(cls)
+
     def __init__(self):
+        if not hasattr(self, "_initialized"):
+            self._initialized = True
+            self._init()
+
+    @classmethod
+    def get_instance(cls):
+        # Use double-checked locking to ensure lazy initialization and thread-safety
+        if cls._instance is None:
+            with cls._lock:  
+                if cls._instance is None: 
+                    cls._instance = super().__new__(cls)
+                    cls._instance.__init__()
+        return cls._instance
+
+    def _init(self):
         print("\nRequest the models from WatsonX...")
         self.llama_llm = WatsonxClient.request_llm(
                                     model_id="meta-llama/llama-3-1-70b-instruct",
@@ -69,10 +96,10 @@ class TechSupportAgent():
                                     stop_sequences=["<|end_of_text|>"])
 
         # Set up LangChain's ReAct framework
-        self._tools = [Tools.default_action, 
-             Tools.generate_a_clarifying_question, 
-             Tools.diagnosis_and_solution, 
-             Tools.escalate_to_human_support]
+        self._tools = [self.default_action, 
+             self.generate_a_clarifying_question, 
+             self.diagnosis_and_solution, 
+             self.escalate_to_human_support]
         
         self._prompt_template_react = PromptTemplate.from_template(prompts.PROMPT_TEMPLATE__REACT)
 
@@ -89,9 +116,93 @@ class TechSupportAgent():
                                     )
 
         self.chat_memory = ChatMemory()
+
+    @staticmethod
+    @tool("default_action", return_direct=False)
+    def default_action(input: str):
+        """This is the default action that the agent can take when three is no other action"""
+        
+        # a workaround to remove "\nObservation" that may be found at the end
+        input = input.removesuffix("\nObservation")
+
+        return ("Based on the last messages in the chat history, "
+                f"think about a relevant response in response to this user input '{input}'. "
+                "Do not take the next action or use another tool, instead provide the final answer/response.\n")
+
+    @staticmethod
+    @tool("generate_a_clarifying_question", return_direct=False)
+    def generate_a_clarifying_question(input: str):
+        """Generating a clarifying question to gather relevant information about the issue.
+        This will allow the issue to be identified more clearly"""
+        support_agent = TechSupportAgent.get_instance()
+
+        prompt_template= PromptTemplate(input_variables=["chat_history"],
+                                        template=prompts.PROMPT_TEMPLATE__CLARIFYING_QUESTIONS)
+        prompt = prompt_template.format(chat_history=support_agent.chat_memory.to_string())
+        questions = support_agent.granite_llm.invoke(prompt)
+        questions = questions.strip().removesuffix("```").removeprefix("```")
+
+        response = ("The instruction for you, the agent: Refer to the JSON array below for clarifying questions that you can use to ask the user:"
+                    f"\n{questions}\n" 
+                    "Extract the questions from the JSON array and think about combining the chosen questions into a single response if needed, especially when they are intended to identify a specific product or the object of the problem/issue. "
+                    )
+
+        # print("\033[90m(Debug: The generate_a_clarifying_question tool was invoked)\033[0m")
+
+        return response
+
+    @staticmethod
+    @tool("diagnosis_and_solution", return_direct=True)
+    def diagnosis_and_solution(input: str):
+        """This is to perform the step Diagnosis and Solution Suggestion. 
+        Analyze gathered information to hypothesize the root cause of the issue. 
+        And then suggest a solution based on the diagnosis information. Provide step-by-step instructions for resolving the issue. 
+        Additionally, ask the user to confirm if the issue is resolved."""
+        support_agent = TechSupportAgent.get_instance()
+
+        prompt_template= PromptTemplate(input_variables=["chat_history"],
+                                        template=prompts.PROMPT_TEMPLATE__DIAGNOSIS_SOLUTION)
+        prompt = prompt_template.format(chat_history=support_agent.chat_memory.to_string())
+        response = support_agent.granite_llm.invoke(prompt)
+
+        # print("\033[90m(Debug: The diagnosis_and_solution tool was invoked)\033[0m")
+
+        return response
+
+    @staticmethod
+    @tool("escalate_to_human_support", return_direct=True)
+    def escalate_to_human_support(input: str):
+        """
+        Escalate the issue to the human support as the issue could not resolved by the AI agent/assistant.
+        If the input is too long, make a summary as the input instead.
+        """
+        support_agent = TechSupportAgent.get_instance()
+
+        input = input.removesuffix("\nObservation")
+
+        email_body=("Hello the support team,\n\n"
+            "Please look into the issue as shown below.\n\n" 
+            f"{input}\n\n"
+            f"Below is the conversation with the user so far.\n\n{support_agent.chat_memory.to_string()}\n\n"
+            "Thank you & Regards,\n\nSent by AI Agent" 
+            )
+
+        # print(f"\033[90m(Debug: The escalate_to_human_support tool was invoked. An email is being sent to the support team:\n\n{email_body})\033[0m")
+        print(f"\033[90m(Debug: The escalate_to_human_support tool was invoked. An email is being sent to the support team)\033[0m")
+
+        result = ("I'm sorry I couldn't resolve the issue. I have escalated the case to the human support team via email, "
+                 f"and they will contact you shortly. Below is the email:\n{email_body}\n\n"
+                 "If anything else, please open a new support session. Thank you!")
+        return result
         
     def greet_user(self, username):
-        greeting =  f"Hello {username}! This is the techical support. How can I help you?"
+        try:
+            greeting = self.granite_llm.invoke("You are a helpful agent assisting the user with troubleshooting technical issues. "
+                                                f"The user's name is {username}. You task is now to greet the user. "
+                                                "At the same time, you also say something to offer your help, for example 'How can I help you?'")
+        except:
+            greeting =  f"Hello {username}! This is the techical support. How can I help you?"
+
         self.chat_memory.add_agent_message(greeting)
         return greeting
 
@@ -154,92 +265,8 @@ def agent_streaming_print(text: str, delay=0.005):
         time.sleep(delay)
     print(f"")  
 
-class Tools():
-    @staticmethod
-    @tool("default_action", return_direct=False)
-    def default_action(input: str):
-        """This is the default action that the agent can take when three is no other action"""
-        
-        # a workaround to remove "\nObservation" that may be found at the end
-        input = input.removesuffix("\nObservation")
-
-        return ("Instruction for you the agent: Based on the last messages in the chat history, "
-                f"think about a relevant response in response to this user input '{input}'. "
-                "Do not take the next action or use another tool, instead provide the final answer/response.\n")
-
-    @staticmethod
-    @tool("generate_a_clarifying_question", return_direct=False)
-    def generate_a_clarifying_question(input: str):
-        """Generating a clarifying question to gather relevant information about the issue.
-        This will allow the issue to be identified more clearly"""
-
-        global support_agent
-
-        prompt_template= PromptTemplate(input_variables=["chat_history"],
-                                        template=prompts.PROMPT_TEMPLATE__CLARIFYING_QUESTIONS)
-        prompt = prompt_template.format(chat_history=support_agent.chat_memory.to_string())
-        questions = support_agent.granite_llm.invoke(prompt)
-        questions = questions.strip().removesuffix("```").removeprefix("```")
-
-        response = ("The instruction for you, the agent: Refer to the JSON array below for clarifying questions that you can use to ask the user:"
-                    f"\n{questions}\n" 
-                    "Extract the questions from the JSON array and think about combining the chosen questions into a single response if needed, especially when they are intended to identify a specific product or the object of the problem/issue. "
-                    )
-
-        # print("\033[90m(Debug: The generate_a_clarifying_question tool was invoked)\033[0m")
-
-        return response
-
-    @staticmethod
-    @tool("diagnosis_and_solution", return_direct=True)
-    def diagnosis_and_solution(input: str):
-        """This is to perform the step Diagnosis and Solution Suggestion. 
-        Analyze gathered information to hypothesize the root cause of the issue. 
-        And then suggest a solution based on the diagnosis information. Provide step-by-step instructions for resolving the issue. 
-        Additionally, ask the user to confirm if the issue is resolved."""
-
-        global support_agent
-
-        prompt_template= PromptTemplate(input_variables=["chat_history"],
-                                        template=prompts.PROMPT_TEMPLATE__DIAGNOSIS_SOLUTION)
-        prompt = prompt_template.format(chat_history=support_agent.chat_memory.to_string())
-        response = support_agent.granite_llm.invoke(prompt)
-
-        # print("\033[90m(Debug: The diagnosis_and_solution tool was invoked)\033[0m")
-
-        return response
-
-    @staticmethod
-    @tool("escalate_to_human_support", return_direct=True)
-    def escalate_to_human_support(input: str):
-        """
-        Escalate the issue to the human support as the issue could not resolved by the AI agent/assistant.
-        If the input is too long, make a summary as the input instead.
-        """
-
-        global support_agent
-
-        input = input.removesuffix("\nObservation")
-
-        email_body=("Hello the support team,\n\n"
-            "Please look into the issue as shown below.\n\n" 
-            f"{input}\n\n"
-            f"Below is the conversation with the user so far.\n\n{support_agent.chat_memory.to_string()}\n\n"
-            "Thank you & Regards,\n\nSent by AI Agent" 
-            )
-
-        print(f"\033[90m(Debug: The escalate_to_human_support tool was invoked. An email is being sent to the support team:\n\n{email_body})\033[0m")
-
-        result = ("Sorry I could not help resolve the issue. I've just escalated the case to the human support team, "
-                "and they will reach out to you soon.\nIf anything else, please open a new support session by type 'new session' "
-                "- or type 'quit' to exit the program. Thank you!")
-        return result
-
-
 if __name__ == "__main__":
-
-    global support_agent
-    support_agent = TechSupportAgent()
+    support_agent = TechSupportAgent.get_instance()
 
     is_requested_to_stop = False
 
