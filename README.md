@@ -18,7 +18,7 @@ The examples currently included are:
 2. **[wx-tech-support-agent](wx-tech-support-agent/)**\
 	This example demonstrates an AI Agent which is a conversational agent, designed to automate a technical support use case by guiding users through a troubleshooting process, and if needed taking appropriate actions. It leverages techniques such as Chain-of-Thought (CoT) prompting and Reasoning & Acting (ReAct) using LangChain, along with multiple LLMs, including Granite 3.0 provided via watsonx.  Additionally, it incorporates features like Chat Memory and Tool Calling to enhance functionality. [more...](wx-tech-support-agent/README.md)
 
-	<img src="misc/agent1.jpg" width="800"/>
+	<img src="wx-tech-support-agent/images/screenshot_tech_support1.jpg" width="800"/>
 
 3. **[wx-weaviate-embedding-api](wx-weaviate-embedding-api/)**\
 	Weaviate is an open-source vector database enabling semantic search through vector embeddings and searches. While it supports many AI platforms, Watsonx is not directly integrated. To use an embedding model like ibm/slate-30m-english-rtrvr, this code provides a workaround by implementing an API that allows Weaviate to consume the model on Watsonx. A shell script is also included to set up a local Weaviate container for demonstration. Both the API and container are required to try the wx-rag-with-granite3 example. [more...](wx-weaviate-embedding-api/README.md)	

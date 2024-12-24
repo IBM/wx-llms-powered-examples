@@ -1,0 +1,8 @@
+[theme]
+
+# "light" or "dark" or none
+base = "dark"
+primaryColor = "#225d91"
+
+[server]
+port = 8080

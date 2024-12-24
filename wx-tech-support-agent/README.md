@@ -44,12 +44,12 @@ $ source .venv/bin/activate
 $ pip install -r requirements. txt
 
 # Run the program
-$ python tech_support_agent.py
+$ streamlit run tech_support_sl.py
 ```
 
-<img src="../misc/agent1.jpg" width="800"/>
-<img src="../misc/agent2.jpg" width="800"/>
-<img src="../misc/agent3.jpg" width="800"/>
+<img src="images/screenshot_tech_support1.jpg" width="800"/>
+<img src="images/screenshot_tech_support2.jpg" width="800"/>
+<img src="images/screenshot_tech_support3.jpg" width="800"/>
 
 ## License
 
