@@ -125,7 +125,7 @@ class TechSupportAgent():
         # a workaround to remove "\nObservation" that may be found at the end
         input = input.removesuffix("\nObservation")
 
-        return ("The instruction for the agent: Based on the last messages in the chat history, "
+        return ("[The instruction for the agent]: Based on the last messages in the chat history, "
                 f"think about a relevant response in response to this user input '{input}'. "
                 "Do not take the next action or use another tool, instead provide the final answer/response.\n")
 
@@ -142,7 +142,7 @@ class TechSupportAgent():
         questions = support_agent.granite_llm.invoke(prompt)
         questions = questions.strip().removesuffix("```").removeprefix("```")
 
-        response = ("The instruction for you, the agent: Refer to the JSON array below for clarifying questions that you can use to ask the user:"
+        response = ("[The instruction for the agent]: Refer to the JSON array below for clarifying questions that you can use to ask the user:"
                     f"\n{questions}\n" 
                     "Extract the questions from the JSON array and think about combining the chosen questions into a single response if needed, especially when they are intended to identify a specific product or the object of the problem/issue. "
                     )
