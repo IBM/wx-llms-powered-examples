@@ -76,6 +76,14 @@ class GridWorldEnv(Env):
         as an implementation example of a deterministic transition model of the environment.
         Mathematically, it is expressed as P(s'|s,a)=1). In other words, for a given state s and action a, the next state s' uniquely determined.
         It realizes the transition dynamics of the environment, defining how the environment responds to actions in a deterministic manner.
+
+        To introduce stochasticity to the environment making it stochastic, it can be done here, in this step() method.
+        For example,
+            if random.uniform(0, 1) < self.slip_probability:
+                # Slip to a random next state
+            else:
+                # proceed as usual...
+        In this case, only step() would need to be modified as shown above, other parts (updating Q-Table, etc...) of the program remain the same.
         """
         
         x, y = self.state
