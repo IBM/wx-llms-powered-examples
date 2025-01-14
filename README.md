@@ -6,7 +6,7 @@ The examples are intended for learning or demonstration purposes. In some cases,
 
 ## Overview
 
-This repository includes examples showcasing the use of IBM foundation models including **IBM Granite 3.0** in combination with concepts such as Chain-of-Thought (CoT), Reasoning & Acting (ReAct), Retrieval-Augmented Generation (RAG), AI Agents, and open-source tools like LangChain and Weaviate. The UI frontend is powered by Streamlit.
+This repository includes examples showcasing the use of IBM foundation models including **IBM Granite 3.0** in combination with concepts such as Chain-of-Thought (CoT), Reasoning & Acting (ReAct), Retrieval-Augmented Generation (RAG), AI Agents, and open-source tools like LangChain and Weaviate. The web-based UI frontend is powered by Streamlit.
 
 The examples currently included are:
 
